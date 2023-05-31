@@ -1,13 +1,19 @@
 package engine.physics.body;
 
+import com.jogamp.opengl.GL2;
+import engine.math.vector.Vector3;
 import engine.physics.collider.Collider;
+import engine.physics.material.Material;
+import engine.physics.shape.Shape;
 
-public abstract class CollisionBody
+public abstract class CollisionBody extends Body
 {
-    private Collider collider;
+    protected Collider collider;
 
-    public CollisionBody(Collider collider)
+    public CollisionBody(Vector3 position, Collider collider, Shape shape, Material material)
     {
+        super(position, shape, material);
+
         this.collider = collider;
     }
 
@@ -21,5 +27,5 @@ public abstract class CollisionBody
         this.collider = collider;
     }
 
-    public abstract void update();
+    public abstract void draw(GL2 gl);
 }

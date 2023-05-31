@@ -3,24 +3,67 @@ package engine.graphics;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
+import engine.graphics.camera.Camera;
+import engine.input.KeyboardInput;
+import engine.input.MouseInput;
+import engine.physics.PhysicsEngine;
+import engine.util.FPSCounter;
+import gui.Window;
 
 public class Scene implements GLEventListener
 {
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
+    private final Window window;
+
+    private final FPSCounter fpsCounter;
 
     private Canvas canvas;
 
-    public Scene(int width, int height)
+    private final Camera camera;
+    private final MouseInput mouseInput;
+    private final KeyboardInput keyboardInput;
+    private final PhysicsEngine physicsEngine;
+
+    public Scene(int width, int height, Window window)
     {
         this.width = width;
         this.height = height;
+        this.window = window;
+
+        fpsCounter = new FPSCounter();
+
+        camera = new Camera();
+        mouseInput = new MouseInput();
+        keyboardInput = new KeyboardInput(mouseInput, camera);
+        physicsEngine = new PhysicsEngine();
     }
 
-    private void initSceneComponents(GL2 gl)
+    public Camera getCamera()
     {
-        canvas = new Canvas(width, height);
+        return camera;
+    }
+
+    public MouseInput getMouseInput()
+    {
+        return mouseInput;
+    }
+
+    public KeyboardInput getKeyboardInput()
+    {
+        return keyboardInput;
+    }
+
+    public PhysicsEngine getPhysicsEngine()
+    {
+        return physicsEngine;
+    }
+
+    private synchronized void initSceneComponents(GL2 gl)
+    {
+        canvas = new Canvas(width, height, this);
         canvas.init(gl);
+        physicsEngine.start();
     }
 
     public void init(GLAutoDrawable glAutoDrawable)
@@ -42,11 +85,14 @@ public class Scene implements GLEventListener
 
     private void update()
     {
-
+        fpsCounter.update();
+        window.setTitle("Physics Engine 3D | FPS: " + FPSCounter.getFPS());
+        keyboardInput.update();
     }
 
     public void display(GLAutoDrawable glAutoDrawable)
     {
+
         update();
 
         GL2 gl = glAutoDrawable.getGL().getGL2();
@@ -65,6 +111,7 @@ public class Scene implements GLEventListener
 
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height)
     {
-
+        this.width = width;
+        this.height = height;
     }
 }

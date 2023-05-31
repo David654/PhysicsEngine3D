@@ -150,7 +150,7 @@ public class Vector3 implements IVector<Vector3>
 
     public double distance(Vector3 vector)
     {
-        return (double) Math.sqrt(Math.pow(x - vector.x, 2) + Math.pow(y - vector.y, 2) + Math.pow(z - vector.z, 2));
+        return Math.sqrt(Math.pow(x - vector.x, 2) + Math.pow(y - vector.y, 2) + Math.pow(z - vector.z, 2));
     }
 
     public Vector3 clamp(Vector3 min, Vector3 max)

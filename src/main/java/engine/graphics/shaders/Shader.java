@@ -200,7 +200,5 @@ public class Shader
         shaderProgram = program.program();
 
         program.link(gl, System.out);
-
-        //gl.glUseProgram(programName);
     }
 }

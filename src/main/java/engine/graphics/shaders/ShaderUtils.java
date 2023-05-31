@@ -1,13 +1,21 @@
 package engine.graphics.shaders;
 
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.util.texture.Texture;
 import engine.math.vector.*;
 
 public final class ShaderUtils
 {
+    public static int TEXTURE_NUM = 0;
+
     public static void setUniform1f(GL2 gl, int shaderProgram, String name, float value)
     {
         gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, name), value);
+    }
+
+    public static void setUniform1i(GL2 gl, int shaderProgram, String name, int value)
+    {
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, name), value);
     }
 
     public static void setUniform2f(GL2 gl, int shaderProgram, String name, float value1, float value2)
@@ -38,5 +46,13 @@ public final class ShaderUtils
     public static void setUniformVector4(GL2 gl, int shaderProgram, String name, Vector4 vector)
     {
         gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, name), (float) vector.getX(), (float) vector.getY(), (float) vector.getZ(), (float) vector.getW());
+    }
+
+    public static void setUniformTexture(GL2 gl, int shaderProgram, String name, int texture)
+    {
+        gl.glActiveTexture(GL2.GL_TEXTURE0 + TEXTURE_NUM);
+        gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);
+        ShaderUtils.setUniform1i(gl, shaderProgram, name, TEXTURE_NUM);
+        TEXTURE_NUM++;
     }
 }

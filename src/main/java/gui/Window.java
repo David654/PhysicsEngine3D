@@ -5,6 +5,8 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import engine.graphics.Scene;
+import engine.input.KeyboardInput;
+import engine.input.MouseInput;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +18,9 @@ public class Window extends JFrame implements GUIComponent
     private String title;
 
     private GLCanvas glCanvas;
+    private Scene scene;
+    private MouseInput mouseInput;
+    private KeyboardInput keyboardInput;
 
     public Window(int width, int height, String title)
     {
@@ -37,8 +42,16 @@ public class Window extends JFrame implements GUIComponent
 
     public void createAndShowGUI()
     {
+        init();
         initGraphics();
         this.add(glCanvas, BorderLayout.CENTER);
+    }
+
+    private void init()
+    {
+        scene = new Scene(width, height, this);
+        mouseInput = scene.getMouseInput();
+        keyboardInput = scene.getKeyboardInput();
     }
 
     private void initGraphics()
@@ -46,8 +59,13 @@ public class Window extends JFrame implements GUIComponent
         GLProfile glProfile = GLProfile.get(GLProfile.GL2);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCanvas = new GLCanvas(glCapabilities);
-        FPSAnimator animator = new FPSAnimator(glCanvas, 60, false);
-        glCanvas.addGLEventListener(new Scene(width, height));
+        FPSAnimator animator = new FPSAnimator(glCanvas, 1000, true);
+
+        glCanvas.addGLEventListener(scene);
+        glCanvas.addMouseListener(mouseInput);
+        glCanvas.addMouseMotionListener(mouseInput);
+        glCanvas.addMouseWheelListener(mouseInput);
+        glCanvas.addKeyListener(keyboardInput);
         animator.start();
     }
 }
