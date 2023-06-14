@@ -11,6 +11,7 @@ public final class Textures
     public static final String TEXTURE_DIRECTORY = "src\\main\\resources\\textures\\";
 
     public static final String BACKGROUND_TEXTURE_PATH = TEXTURE_DIRECTORY + "background.jpg";
+    public static final String BUFFER_TEXTURE_PATH = TEXTURE_DIRECTORY + "buffer_texture.png";
 
     public static Texture createNewTexture(String path)
     {

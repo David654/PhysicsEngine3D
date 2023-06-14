@@ -19,6 +19,7 @@ public interface IVector<Vector>
     Vector multiply(double scalar);
     Vector divide(Vector vector);
     Vector divide(double scalar);
+    Vector pow(double power);
     double dot(Vector vector);
     Vector cross(Vector vector);
     Vector reflect(Vector normal);

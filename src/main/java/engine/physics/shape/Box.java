@@ -1,6 +1,7 @@
 package engine.physics.shape;
 
 import engine.math.vector.Vector3;
+import engine.physics.PhysicConstants;
 
 public non-sealed class Box extends ConvexPolyhedron implements PrimitiveShape
 {
@@ -97,11 +98,17 @@ public non-sealed class Box extends ConvexPolyhedron implements PrimitiveShape
 
     public double getArea()
     {
-        return dimensions.getX() * dimensions.getY() * dimensions.getZ();
+        return 2 * (dimensions.getX() * dimensions.getY() + dimensions.getY() * dimensions.getZ() + dimensions.getX() * dimensions.getZ());
     }
 
     public void updatePosition(Vector3 position)
     {
         this.setPosition(position);
+    }
+
+    public void scale()
+    {
+        position = position.multiply(1 / PhysicConstants.WORLD_SCALE);
+        dimensions = dimensions.multiply(1 / PhysicConstants.WORLD_SCALE);
     }
 }

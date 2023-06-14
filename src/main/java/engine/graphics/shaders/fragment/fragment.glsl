@@ -1,4 +1,4 @@
-#version 130
+#version 140
 
 #include body.glsl
 #include variables.glsl
@@ -10,7 +10,7 @@
 out vec4 fragColor;
 in vec2 texCoord;
 
-int samples = 100;
+int samples = 20;
 uvec4 R_STATE;
 
 vec3 mouseControl(in vec3 rd)
@@ -82,7 +82,7 @@ vec3 randomOnSphere()
     return vec3(x, y, z);
 }
 
-vec3 traceRay(inout vec3 ro, inout vec3 rd, vec3 color)
+vec3 traceRay(in vec3 ro, in vec3 rd, vec3 color)
 {
     for(int i = 0; i < samples; i++)
     {
@@ -98,16 +98,19 @@ vec3 traceRay(inout vec3 ro, inout vec3 rd, vec3 color)
 
         Body body = bodies[index];
 
+        float diffuse = getBodyDiffuse(index);
+        float refraction = body.material.refraction;
+
         vec3 n = getNormal(ro, rd, intersectionPoint, body);
 
         vec3 rand = randomOnSphere();
         vec3 spec = reflect(rd, n);
         vec3 diff = normalize(rand * dot(rand, n));
 
-        if(body.material.refraction > 0)
+        if(refraction > 0)
         {
             float fresnel = 1.0 - abs(dot(-rd, n));
-            float angle = asin(1.000273 / body.material.refraction);
+            float angle = asin(1.000273 / refraction);
 
             if(fresnel >= angle)
             {
@@ -116,8 +119,8 @@ vec3 traceRay(inout vec3 ro, inout vec3 rd, vec3 color)
             else
             {
                 ro += rd * (intersection.y + 0.001);
-                rd = mix(diff, spec, body.material.diffuse);
-                rd = refract(rd, n, 1.0 / (1.0 + body.material.refraction));
+                rd = mix(diff, spec, diffuse);
+                rd = refract(rd, n, 1.0 / (1.0 + refraction));
             }
             //color * getLight(ro, rd, lightPosition, second);
         }
@@ -126,13 +129,21 @@ vec3 traceRay(inout vec3 ro, inout vec3 rd, vec3 color)
             ro += rd * (intersection.x - 0.001);
             //rd = reflect(rd, n);
 
-            rd = mix(diff, spec, body.material.diffuse);
+            rd = mix(diff, spec, diffuse);
         }
 
         color *= getLight(ro, rd, lightPosition, second);
     }
 
     return vec3(0);
+}
+
+void initBodies()
+{
+    for(int i = 0; i < uNumBodies; i++)
+    {
+        //bodies[i] = Body(ids[i], getBodyPosition(i), getBodyDimensions(i), Material(getBodyColor(i), diffuses[i], refractions[i]));
+    }
 }
 
 vec3 render(in vec2 uv)
@@ -143,6 +154,8 @@ vec3 render(in vec2 uv)
     //vec3 rd = getCam(ro, lookAt) * normalize(vec3(uv, uFOV));
     vec3 rd = normalize(vec3(uFOV, uv));
     rd = mouseControl(rd).yzx;
+
+    initBodies();
 
     //lightPosition.x = sin(uTime) * 10;
     //lightPosition.y = cos(uTime) * 10;
@@ -167,10 +180,24 @@ vec3 render(in vec2 uv)
     R_STATE.z = uint(uSeed2.x + uvRes.y);
     R_STATE.w = uint(uSeed2.y + uvRes.y);
 
-    outColor = traceRay(ro, rd, body.material.color);
+    outColor = traceRay(ro, rd, getBodyColor(index));
+
+
+   /* vec3 mousePoint = castRay(vec3(0) + ro, rd);
+    int mousePointIndex = int(mousePoint.z);
+
+    if(mousePointIndex != -1)
+    {
+        outColor = mix(outColor, vec3(1, 0.46, 0.09), 0.5);
+    }**/
 
     vec3 sampleCol = texture(uPreviousFrame, rd.xy).rgb;
     outColor = mix(sampleCol, outColor, 1);
+
+    if(int(uSelectedBodyIndex) == index)
+    {
+        outColor = mix(outColor, vec3(1, 0.46, 0.09), 0.5);
+    }
 
     return outColor;
 }
@@ -210,7 +237,7 @@ vec3 renderAAx4()
 
 void main()
 {
-    vec3 col = renderAAx4();
+    vec3 col = renderAAx1();
     col = gammaCorrection(col);
 
     fragColor = vec4(col, 1.0);

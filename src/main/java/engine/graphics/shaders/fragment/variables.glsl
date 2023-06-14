@@ -1,11 +1,19 @@
 const float PI = 3.1415926;
 const float MAX_DIST = 999999;
-const int MAX_BODY_COUNT = 10;
+const int MAX_BODY_COUNT = 1000;
 
 vec3 lightPosition = vec3(0, 0, 0);
 
+uniform uBodyIDBlock{int ids[MAX_BODY_COUNT];};
+uniform uBodyPositionBlock{float positions[MAX_BODY_COUNT * 3];};
+uniform uBodyDimensionBlock{float dimensions[MAX_BODY_COUNT * 3];};
+uniform uBodyColorBlock{float colors[MAX_BODY_COUNT * 3];};
+uniform uBodyDiffuseBlock{float diffuses[MAX_BODY_COUNT];};
+uniform uBodyRefractionBlock{float refractions[MAX_BODY_COUNT];};
 
-uniform Body bodies[MAX_BODY_COUNT];
+uniform Body bodies[100];
+
+uniform int uNumBodies;
 
 /**
 = Body[](
@@ -23,6 +31,8 @@ uniform Body bodies[MAX_BODY_COUNT];
 uniform vec2 uResolution;
 uniform float uTime;
 uniform vec2 uMousePosition;
+uniform vec2 uMouseClick;
+uniform int uSelectedBodyIndex;
 
 uniform vec3 uPosition;
 uniform float uFOV;

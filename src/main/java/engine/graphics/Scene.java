@@ -8,6 +8,7 @@ import engine.input.KeyboardInput;
 import engine.input.MouseInput;
 import engine.physics.PhysicsEngine;
 import engine.util.FPSCounter;
+import gui.BodySelectionPanel;
 import gui.Window;
 
 public class Scene implements GLEventListener
@@ -19,6 +20,7 @@ public class Scene implements GLEventListener
     private final FPSCounter fpsCounter;
 
     private Canvas canvas;
+    private final BodySelectionPanel bodySelectionPanel;
 
     private final Camera camera;
     private final MouseInput mouseInput;
@@ -37,6 +39,13 @@ public class Scene implements GLEventListener
         mouseInput = new MouseInput();
         keyboardInput = new KeyboardInput(mouseInput, camera);
         physicsEngine = new PhysicsEngine();
+
+        bodySelectionPanel = new BodySelectionPanel();
+    }
+
+    public BodySelectionPanel getBodyPanel()
+    {
+        return bodySelectionPanel;
     }
 
     public Camera getCamera()

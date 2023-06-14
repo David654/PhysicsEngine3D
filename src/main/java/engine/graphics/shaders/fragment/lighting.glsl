@@ -55,7 +55,7 @@ vec3 getLight(vec3 ro, vec3 rd, vec3 lightPos, vec3 rayCast)
         }
     }
 
-    return body.material.color;
+    return getBodyColor(index);
 }
 
 vec3 gammaCorrection(vec3 col)

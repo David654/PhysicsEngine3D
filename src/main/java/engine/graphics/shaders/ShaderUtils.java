@@ -1,8 +1,11 @@
 package engine.graphics.shaders;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.util.texture.Texture;
 import engine.math.vector.*;
+
+import java.nio.Buffer;
+import java.nio.IntBuffer;
 
 public final class ShaderUtils
 {
@@ -54,5 +57,22 @@ public final class ShaderUtils
         gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);
         ShaderUtils.setUniform1i(gl, shaderProgram, name, TEXTURE_NUM);
         TEXTURE_NUM++;
+    }
+
+    public static void setUniformBuffer(GL2 gl, int shaderProgram, String name, Buffer buffer, int bufferIndex)
+    {
+        gl.glBindBuffer(GL2.GL_UNIFORM_BUFFER, bufferIndex);
+        int blockIndex = gl.glGetUniformBlockIndex(shaderProgram, name);
+        gl.glUniformBlockBinding(shaderProgram, blockIndex, 0);
+        gl.glBufferData(GL2.GL_UNIFORM_BUFFER, (long) buffer.limit() * Float.SIZE, buffer, GL2.GL_DYNAMIC_DRAW);
+        gl.glBindBufferBase(GL2.GL_UNIFORM_BUFFER, blockIndex, bufferIndex);
+        gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+    }
+
+    public static int getBufferIndex(GL2 gl)
+    {
+        IntBuffer buf = Buffers.newDirectIntBuffer(1);
+        gl.glGenBuffers(1, buf);
+        return buf.get();
     }
 }

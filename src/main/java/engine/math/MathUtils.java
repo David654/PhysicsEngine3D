@@ -342,4 +342,9 @@ public final class MathUtils
                 {0, 0, 1}
         }).multiply(vector);
     }
+
+    public static double getRandomValue(double min, double max)
+    {
+        return Math.random() * (max - min) + min;
+    }
 }

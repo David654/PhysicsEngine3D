@@ -21,6 +21,11 @@ public class SphereCollider extends Collider
         ((Sphere) shape).setPosition(position);
     }
 
+    public Vector3 getDimensions()
+    {
+        return ((Sphere) shape).getDimensions();
+    }
+
     public double getRadius()
     {
         return ((Sphere) shape).getRadius();
@@ -43,19 +48,6 @@ public class SphereCollider extends Collider
         Vector3 closestPoint = ((Box) collider.getShape()).getClosestPointToShape(shape);
         double dist = this.getPosition().distance(closestPoint);
         return dist < this.getRadius();
-    }
-
-    public boolean collides(Collider collider)
-    {
-        if(collider instanceof SphereCollider sphereCollider)
-        {
-            return collides(sphereCollider);
-        }
-        else if(collider instanceof AABBCollider AABBCollider)
-        {
-            return collides(AABBCollider);
-        }
-        return false;
     }
 
     public void updatePosition(Vector3 position)

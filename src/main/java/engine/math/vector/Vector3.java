@@ -138,6 +138,11 @@ public class Vector3 implements IVector<Vector3>
         return new Vector3(x / scalar, y / scalar, z / scalar);
     }
 
+    public Vector3 pow(double power)
+    {
+        return new Vector3(Math.pow(x, power), Math.pow(y, power), Math.pow(z, power));
+    }
+
     public Vector3 max(Vector3 vector)
     {
         return new Vector3(Math.max(x, vector.x), Math.max(y, vector.y), Math.max(z, vector.z));
@@ -160,6 +165,10 @@ public class Vector3 implements IVector<Vector3>
 
     public Vector3 normalize()
     {
+        if(length() == 0)
+        {
+            return new Vector3();
+        }
         return new Vector3(x / length(), y / length(), z / length());
     }
 

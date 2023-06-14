@@ -7,27 +7,36 @@ import engine.physics.PhysicsEngine;
 import engine.physics.collider.Collider;
 import engine.physics.material.Material;
 import engine.physics.shape.Box;
+import engine.physics.shape.PrimitiveShape;
 import engine.physics.shape.Shape;
 import engine.physics.shape.Sphere;
 
 public class DynamicBody extends CollisionBody
 {
+    private Vector3 lastPosition;
     private Vector3 velocity;
     private double mass;
     private Vector3 force;
     private Vector3 tmpVelocity;
     private Vector3 previousAcceleration;
+    private Vector3 rotation;
+    private Vector3 rotationVelocity;
+
+    private boolean applyGravity = true;
 
     public DynamicBody(Vector3 position, Vector3 velocity, double mass, Collider collider, Shape shape, Material material)
     {
         super(position, collider, shape, material);
 
         this.position = position;
+        lastPosition = position;
         this.velocity = velocity;
         this.mass = mass;
         force = new Vector3();
         tmpVelocity = velocity;
         previousAcceleration = new Vector3();
+        rotation = new Vector3();
+        rotationVelocity = new Vector3();
     }
 
     public DynamicBody(Vector3 position, double mass, Collider collider, Shape shape, Material material)
@@ -75,6 +84,21 @@ public class DynamicBody extends CollisionBody
         this.force = force;
     }
 
+    public Vector3 getLastPosition()
+    {
+        return lastPosition;
+    }
+
+    public boolean isGravityApplied()
+    {
+        return applyGravity;
+    }
+
+    public void applyGravity(boolean applyGravity)
+    {
+        this.applyGravity = applyGravity;
+    }
+
     private Vector3 getGravity()
     {
         return new Vector3(0, -mass * PhysicConstants.g, 0);
@@ -82,60 +106,104 @@ public class DynamicBody extends CollisionBody
 
     private Vector3 getAirResistance()
     {
-        double area = 0;
         double dragCoefficient = 0;
 
-        if(shape instanceof Sphere sphere)
+        if(shape instanceof Sphere)
         {
-            area = 4 * Math.PI * Math.pow(sphere.getRadius(), 2);
             dragCoefficient = 0.47;
         }
-        else if(shape instanceof Box box)
+        else if(shape instanceof Box)
         {
-            Vector3 dimensions = box.getDimensions();
-            area = dimensions.getX() * dimensions.getY() * dimensions.getZ();
             dragCoefficient = 1.05;
         }
 
-        return velocity.multiply(velocity).multiply(0.5 * PhysicConstants.AIR_DENSITY * area * dragCoefficient);
+     //   Vector3 force = new Vector3(0, -Math.signum(velocity.getY()) * Math.pow(velocity.getY(), 2) * (0.5 * PhysicConstants.AIR_DENSITY * shape.getArea() * dragCoefficient), 0);
+
+        Vector3 velocityDirection = velocity.normalize();
+        return velocityDirection.multiply(-Math.pow(velocity.length(), 2) * 0.5 * PhysicConstants.AIR_DENSITY * shape.getArea() * dragCoefficient);
     }
 
     public void updateForces()
     {
         force = new Vector3();
-        force = force.add(getGravity());
-        //force = force.add(getAirResistance());
+        if(applyGravity)
+        {
+            force = force.add(getGravity());
+        }
+       // force = force.add(getAirResistance());
     }
 
     public void checkCollisions()
     {
+        collides = false;
+
         for(int i = 0; i < PhysicsEngine.BODY_HANDLER.size(); i++)
         {
             Body body = PhysicsEngine.BODY_HANDLER.get(i);
 
-            if(body != this)
+            if(body != this && body.isVisible())
             {
+                Vector3 p = body.getPosition();
+
                 if(body instanceof DynamicBody dynamicBody)
                 {
                     if(this.getCollider().collides(dynamicBody.getCollider()))
                     {
+                        collides = true;
                         Vector3 v = dynamicBody.getVelocity();
                         double m = dynamicBody.getMass();
 
-                        tmpVelocity = velocity.multiply((mass - m) / (mass + m)).add(v.multiply(2 * m / (mass + m)));
+                        //tmpVelocity = velocity.multiply((mass - m) / (mass + m)).add(v.multiply(2 * m / (mass + m)));
+                        //tmpVelocity = tmpVelocity.subtract(position.subtract(p).multiply(2 * m / (mass + m) * velocity.subtract(v).multiply(material.getRestitution()).dot(position.subtract(p)) / Math.pow(position.subtract(p).length(), 2)));
+                       // tmpVelocity = tmpVelocity.multiply(normal);
+
+                        Vector3 newVelocity = position.subtract(p).multiply((1 + material.getRestitution()) * m / (mass + m) * velocity.subtract(v).dot(position.subtract(p)) / Math.pow(position.subtract(p).length(), 2));
+                        tmpVelocity = tmpVelocity.subtract(newVelocity);
+
+                       // Vector3 normal = dynamicBody.getCollider().getShape().getNormal(this.getShape());
+                       // double n = velocity.dot(normal);
+                        Vector3 N = getGravity().negate();
+                        //force = force.add(N.multiply(0.19));
+
+                        Vector3 friction = velocity.normalize().multiply(-mass * PhysicConstants.g * body.getMaterial().getFriction());
+                        force = force.add(friction);
+
+                        //System.out.println(position.subtract(body.getPosition()).length() - ((Sphere) shape).getRadius() - ((Sphere) body.getShape()).getRadius());
+
+                        //double t = ((Sphere) shape).getRadius() + ((Sphere) body.getShape()).getRadius() - ();
                     }
                 }
                 else if(body instanceof StaticBody staticBody)
                 {
                     if(this.collider.collides(staticBody.getCollider()))
                     {
+                        collides = true;
                         // System.out.println(position.add(shape.getDimensions()).subtract(staticBody.getPosition()));
 
                         //tmpVelocity = velocity.multiply((mass - Double.MAX_VALUE) / (mass + Double.MAX_VALUE));
                         //System.out.println(normal.multiply(-2 * normal.dot(velocity)));
                         Vector3 normal = staticBody.getCollider().getShape().getNormal(collider.getShape());
                         //System.out.println(normal);
-                        tmpVelocity = velocity.add(normal.multiply(-2 * normal.dot(velocity)));
+                        //Vector3 v = position.subtract(p).multiply((1 + material.getRestitution()) * velocity.dot(position.subtract(p)) / Math.pow(position.subtract(p).length(), 2));
+                        tmpVelocity = velocity.add(normal.multiply(-(1 + material.getRestitution()) * normal.dot(velocity)));
+
+                       // System.out.println(tmpVelocity);
+
+                       // Vector3 newVelocity = position.subtract(p).multiply((1 + material.getRestitution()) * velocity.negate().dot(position.subtract(p)) / Math.pow(position.subtract(p).length(), 2));
+                       // System.out.println(velocity + "; " + newVelocity);
+                       // tmpVelocity = tmpVelocity.add(normal.multiply(-2 * normal.dot(newVelocity)));
+
+
+
+                       // tmpVelocity = tmpVelocity.subtract(position.subtract(p).multiply(2 * velocity.dot(position.subtract(p)) / Math.pow(position.subtract(p).length(), 2)));
+                        //System.out.println(position.subtract(p).multiply(2 * velocity.dot(position.subtract(p)) / Math.pow(position.subtract(p).length(), 2)));
+
+                        Vector3 relativeVelocity = tmpVelocity.subtract(velocity);
+                        Vector3 tangent = relativeVelocity.subtract(normal.multiply(relativeVelocity.dot(normal))).normalize();
+                        //double jt = -
+
+                        Vector3 friction = velocity.normalize().multiply(-mass * PhysicConstants.g * body.getMaterial().getFriction());
+                        force = force.add(friction);
                     }
                 }
             }
@@ -144,19 +212,25 @@ public class DynamicBody extends CollisionBody
 
     public void updatePosition()
     {
-        double dt = 1 / 60.0;
+        double dt = 1 / 1000.0;
 
-        velocity = tmpVelocity;
+        velocity = new Vector3(tmpVelocity);
         Vector3 acceleration = force.multiply(1 / mass);
 
         position = position.add(velocity.multiply(dt)).add(acceleration.multiply(0.5 * dt * dt));
         velocity = velocity.add(previousAcceleration.add(acceleration).multiply(0.5 * dt));
 
+        rotation = rotation.add(rotationVelocity.multiply(dt));
+        rotationVelocity = rotationVelocity.add(velocity);
+
         //System.out.println(velocity);
 
-        tmpVelocity = velocity;
+        lastPosition = new Vector3(position);
+
+        tmpVelocity = new Vector3(velocity);
 
         previousAcceleration = acceleration;
+        force = new Vector3();
 
         //position = position.add(velocity);
         this.getCollider().updatePosition(position);

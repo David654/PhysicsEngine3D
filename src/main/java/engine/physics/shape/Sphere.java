@@ -1,6 +1,7 @@
 package engine.physics.shape;
 
 import engine.math.vector.Vector3;
+import engine.physics.PhysicConstants;
 
 public non-sealed class Sphere implements PrimitiveShape
 {
@@ -56,7 +57,7 @@ public non-sealed class Sphere implements PrimitiveShape
 
     public double getArea()
     {
-        return Math.PI * Math.pow(radius, 2);
+        return 4 * Math.PI * Math.pow(radius, 2);
     }
 
     public void updatePosition(Vector3 position)

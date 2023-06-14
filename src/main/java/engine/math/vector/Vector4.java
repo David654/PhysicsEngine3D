@@ -143,6 +143,11 @@ public class Vector4 implements IVector<Vector4>
         return new Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
     }
 
+    public Vector4 pow(double power)
+    {
+        return new Vector4(Math.pow(x, power), Math.pow(y, power), Math.pow(z, power), Math.pow(w, power));
+    }
+
     public Vector4 max(Vector4 vector)
     {
         return new Vector4(Math.max(x, vector.x), Math.max(y, vector.y), Math.max(z, vector.z), Math.max(w, vector.w));
@@ -165,6 +170,10 @@ public class Vector4 implements IVector<Vector4>
 
     public Vector4 normalize()
     {
+        if(length() == 0)
+        {
+            return new Vector4();
+        }
         return new Vector4(x / length(), y / length(), z / length(), w / length());
     }
 

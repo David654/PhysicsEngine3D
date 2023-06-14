@@ -107,6 +107,11 @@ public class Vector2 implements IVector<Vector2>
         return new Vector2(x / scalar, y / scalar);
     }
 
+    public Vector2 pow(double power)
+    {
+        return new Vector2(Math.pow(x, power), Math.pow(y, power));
+    }
+
     public Vector2 max(Vector2 vector)
     {
         return new Vector2(Math.max(x, vector.x), Math.max(y, vector.y));
@@ -129,6 +134,10 @@ public class Vector2 implements IVector<Vector2>
 
     public Vector2 normalize()
     {
+        if(length() == 0)
+        {
+            return new Vector2();
+        }
         return new Vector2(x / length(), y / length());
     }
 

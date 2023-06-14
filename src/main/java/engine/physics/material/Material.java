@@ -7,12 +7,16 @@ public class Material
     protected Color color;
     protected double diffuse;
     protected double refraction;
+    protected double friction;
+    protected double restitution;
 
-    public Material(Color color, double diffuse, double refraction)
+    public Material(Color color, double diffuse, double refraction, double friction, double restitution)
     {
         this.color = color;
         this.diffuse = diffuse;
         this.refraction = refraction;
+        this.friction = friction;
+        this.restitution = restitution;
     }
 
     public Color getColor()
@@ -43,5 +47,25 @@ public class Material
     public void setRefraction(double refraction)
     {
         this.refraction = refraction;
+    }
+
+    public double getFriction()
+    {
+        return friction;
+    }
+
+    public void setFriction(double friction)
+    {
+        this.friction = friction;
+    }
+
+    public double getRestitution()
+    {
+        return restitution;
+    }
+
+    public void setRestitution(double restitution)
+    {
+        this.restitution = restitution;
     }
 }

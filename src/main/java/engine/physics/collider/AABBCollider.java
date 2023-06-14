@@ -2,7 +2,6 @@ package engine.physics.collider;
 
 import engine.math.vector.Vector3;
 import engine.physics.shape.Box;
-import engine.physics.shape.Sphere;
 
 public class AABBCollider extends Collider
 {
@@ -19,7 +18,6 @@ public class AABBCollider extends Collider
     public void setPosition(Vector3 position)
     {
         ((Box) shape).setPosition(position);
-        //System.out.println(getPosition());
     }
 
     public Vector3 getDimensions()
@@ -49,22 +47,9 @@ public class AABBCollider extends Collider
                 (aMin.getZ() <= bMax.getZ() && aMax.getZ() >= bMin.getZ());
     }
 
-    public boolean collides(Collider collider)
-    {
-        if(collider instanceof SphereCollider sphereCollider)
-        {
-            return collides(sphereCollider);
-        }
-        else if(collider instanceof AABBCollider AABBCollider)
-        {
-            return collides(AABBCollider);
-        }
-        return false;
-    }
-
     public void updatePosition(Vector3 position)
     {
         this.setPosition(position);
-        //System.out.println(this.getPosition());
+        ((Box) shape).rotateX(10 / 60.0);
     }
 }

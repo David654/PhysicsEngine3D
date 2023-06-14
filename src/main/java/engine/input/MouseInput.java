@@ -7,6 +7,7 @@ import java.awt.event.*;
 public class MouseInput implements MouseListener, MouseMotionListener, MouseWheelListener
 {
     private Vector2 mousePosition;
+    private Vector2 mouseClick;
     private Vector2 mouseDragPosition;
     private double mouseZoom;
 
@@ -14,11 +15,17 @@ public class MouseInput implements MouseListener, MouseMotionListener, MouseWhee
     {
         mousePosition = new Vector2();
         mouseDragPosition = new Vector2();
+        mouseClick = new Vector2();
     }
 
     public Vector2 getMouseDragPosition()
     {
         return mouseDragPosition;
+    }
+
+    public Vector2 getMouseClick()
+    {
+        return mouseClick;
     }
 
     public double getMouseZoom()
@@ -30,6 +37,7 @@ public class MouseInput implements MouseListener, MouseMotionListener, MouseWhee
 
     public void mousePressed(MouseEvent e)
     {
+        mouseClick = new Vector2(e.getX(), e.getY());
         mousePosition = new Vector2(e.getX(), e.getY());
     }
 

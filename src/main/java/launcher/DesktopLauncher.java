@@ -1,5 +1,7 @@
 package launcher;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import gui.Window;
 
 public class DesktopLauncher
@@ -8,7 +10,8 @@ public class DesktopLauncher
 
     public void launch()
     {
-        window = new Window(1280, 720, "Physics Engine");
+        FlatDarculaLaf.setup();
+        window = new Window(2560, 1440, "Physics Engine");
     }
 
     public static void main(String[] args)
