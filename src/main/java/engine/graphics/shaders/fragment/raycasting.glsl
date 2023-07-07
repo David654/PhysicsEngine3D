@@ -1,4 +1,4 @@
-vec3 castRay(vec3 ro, vec3 rd)
+vec3 castRay(Ray ray)
 {
     vec2 minIntersection = vec2(MAX_DIST);
     vec2 intersection;
@@ -11,23 +11,23 @@ vec3 castRay(vec3 ro, vec3 rd)
     {
         Body body = bodies[i];
         vec3 n;
-        int id = body.id;
-        vec3 position = body.position;
+        int id = getBodyID(i);
+        vec3 position = getBodyPosition(i);
 
         if(id == SPHERE)
         {
-            intersection = sphereIntersect(ro - position, rd, body.dimensions.x);
+            intersection = sphereIntersect(ray.ro - position, ray.rd, getBodyDimensions(i).x);
         }
 
         if(id == BOX)
         {
-            intersection = boxIntersection(ro - position, rd, body.dimensions, n);
+            intersection = boxIntersection(ray.ro - position, ray.rd, getBodyDimensions(i), n);
         }
 
         if(intersection.x > 0.0 && intersection.x < minIntersection.x)
         {
             minIntersection = intersection;
-            intersectionPoint = ro + rd * intersection.x;
+            intersectionPoint = ray.ro + ray.rd * intersection.x;
             index = i;
 
             if(id == SPHERE)
@@ -35,7 +35,7 @@ vec3 castRay(vec3 ro, vec3 rd)
                 n = normalize(intersectionPoint - position);
             }
 
-            //outColor = getLight(intersectionPoint, rd, n, lightPosition, body.color, step(castRay(intersectionPoint + n * 0.001, normalize(lightPosition - intersectionPoint)).y, 0));
+            //outColor = getLight(intersectionPoint, ray.rd, n, lightPosition, body.color, step(castRay(intersectionPoint + n * 0.001, normalize(lightPosition - intersectionPoint)).y, 0));
 
             //break;
         }

@@ -36,7 +36,7 @@ vec3 getLight(vec3 ro, vec3 rd, vec3 lightPos, vec3 rayCast)
     vec3 specular = specColor * pow(clamp(dot(R, V), 0.0, 1.0), 256.0); // clamp(dot(R, V), 0.0, 1.0)
 
     // shadows
-    float shadow = step(castRay(intersectionPoint + N * 0.001, L).z, 0);
+    float shadow = step(castRay(Ray(intersectionPoint + N * 0.001, L)).z, 0);
 
     // ambient occlusion
     float occ = 1;
@@ -49,7 +49,7 @@ vec3 getLight(vec3 ro, vec3 rd, vec3 lightPos, vec3 rayCast)
 
     if(dot(N, L) > 0)
     {
-        if(castRay(intersectionPoint, L).z != -1)
+        if(castRay(Ray(intersectionPoint, L)).z != -1)
         {
             outColor *= 0.5;
         }

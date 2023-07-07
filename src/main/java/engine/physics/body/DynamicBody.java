@@ -141,7 +141,7 @@ public class DynamicBody extends CollisionBody
         {
             Body body = PhysicsEngine.BODY_HANDLER.get(i);
 
-            if(body != this && body.isVisible())
+            if(body != this && body.isEnabled())
             {
                 Vector3 p = body.getPosition();
 
@@ -217,8 +217,11 @@ public class DynamicBody extends CollisionBody
         velocity = new Vector3(tmpVelocity);
         Vector3 acceleration = force.multiply(1 / mass);
 
-        position = position.add(velocity.multiply(dt)).add(acceleration.multiply(0.5 * dt * dt));
-        velocity = velocity.add(previousAcceleration.add(acceleration).multiply(0.5 * dt));
+
+        velocity = velocity.add(acceleration.multiply(dt));
+        position = position.add(velocity.multiply(dt));
+        //position = position.add(velocity.multiply(dt)).add(acceleration.multiply(0.5 * dt * dt));
+        //velocity = velocity.add(previousAcceleration.add(acceleration).multiply(0.5 * dt));
 
         rotation = rotation.add(rotationVelocity.multiply(dt));
         rotationVelocity = rotationVelocity.add(velocity);
@@ -235,6 +238,11 @@ public class DynamicBody extends CollisionBody
         //position = position.add(velocity);
         this.getCollider().updatePosition(position);
         this.getShape().updatePosition(position);
+
+        if(velocity.length() < 0.000001)
+        {
+            velocity = new Vector3();
+        }
     }
 
     public void draw(GL2 gl)

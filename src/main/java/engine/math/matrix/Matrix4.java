@@ -3,6 +3,8 @@ package engine.math.matrix;
 import engine.math.MathUtils;
 import engine.math.vector.Vector4;
 
+import java.util.Arrays;
+
 public class Matrix4 implements IMatrix<Matrix4>
 {
     private final double[][] matrix;
@@ -25,6 +27,21 @@ public class Matrix4 implements IMatrix<Matrix4>
     public void set(int i, int j, double value)
     {
         matrix[i][j] = value;
+    }
+
+    public float[] toFloatArray()
+    {
+        float[] array = new float[16];
+
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j = 0; j < 4; j++)
+            {
+                array[i + 4 * j] = (float) matrix[i][j];
+            }
+        }
+
+        return array;
     }
 
     public String toString()

@@ -25,7 +25,7 @@ public class StaticBody extends CollisionBody
         {
             Body body = PhysicsEngine.BODY_HANDLER.get(i);
 
-            if(body != this && body.isVisible())
+            if(body != this && body.isEnabled())
             {
                 if(body instanceof DynamicBody dynamicBody)
                 {

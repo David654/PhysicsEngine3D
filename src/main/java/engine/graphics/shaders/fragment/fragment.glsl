@@ -1,5 +1,6 @@
-#version 140
+#version 420
 
+#include ray.glsl
 #include body.glsl
 #include variables.glsl
 #include util.glsl
@@ -10,8 +11,7 @@
 out vec4 fragColor;
 in vec2 texCoord;
 
-int samples = 20;
-uvec4 R_STATE;
+const int maxReflectionNum = 20;
 
 vec3 mouseControl(in vec3 rd)
 {
@@ -39,100 +39,84 @@ vec3 getSky(vec3 rd)
     vec3 sun = vec3(0.95, 0.9, 1.0);
     sun *= max(0.0, pow(dot(rd, normalize(lightPosition)), 256));
     return clamp(sun + col, 0.0, 1.0);
+    //return vec3(0, 1, 1);
 }
 
-uint TausStep(uint z, int S1, int S2, int S3, uint M)
+vec3 traceRay(in Ray ray, vec3 color)
 {
-    uint b = (((z << S1) ^ z) >> S2);
-    return (((z & M) << S3) ^ b);
-}
-
-uint LCGStep(uint z, uint A, uint C)
-{
-    return (A * z + C);
-}
-
-vec2 hash22(vec2 p)
-{
-    p += uSeed1.x;
-    vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.xx + p3.yz) * p3.zy);
-}
-
-float random()
-{
-    R_STATE.x = TausStep(R_STATE.x, 13, 19, 12, uint(4294967294));
-    R_STATE.y = TausStep(R_STATE.y, 2, 25, 4, uint(4294967288));
-    R_STATE.z = TausStep(R_STATE.z, 3, 11, 17, uint(4294967280));
-    R_STATE.w = LCGStep(R_STATE.w, uint(1664525), uint(1013904223));
-    return 2.3283064365387e-10 * float((R_STATE.x ^ R_STATE.y ^ R_STATE.z ^ R_STATE.w));
-}
-
-vec3 randomOnSphere()
-{
-    vec3 rand = vec3(random(), random(), random());
-    float theta = rand.x * 2.0 * 3.14159265;
-    float v = rand.y;
-    float phi = acos(2.0 * v - 1.0);
-    float r = pow(rand.z, 1.0 / 3.0);
-    float x = r * sin(phi) * cos(theta);
-    float y = r * sin(phi) * sin(theta);
-    float z = r * cos(phi);
-    return vec3(x, y, z);
-}
-
-vec3 traceRay(in vec3 ro, in vec3 rd, vec3 color)
-{
-    for(int i = 0; i < samples; i++)
+    for(int i = 0; i < maxReflectionNum; i++)
     {
-        vec3 second = castRay(ro, rd);
+        vec3 second = castRay(ray);
         vec2 intersection = second.xy;
-        vec3 intersectionPoint = ro + rd * intersection.x;
+        vec3 intersectionPoint = ray.ro + ray.rd * intersection.x;
         int index = int(second.z);
 
         if(index == -1)
         {
-            return color * getSky(rd);
+            return color * getSky(ray.rd);
         }
 
-        Body body = bodies[index];
+        if(bodies[index].lightID == 1)
+        {
+            return color;
+        }
+
+        //Body body = bodies[index];
 
         float diffuse = getBodyDiffuse(index);
-        float refraction = body.material.refraction;
+        float refraction = getBodyRefraction(index);
 
-        vec3 n = getNormal(ro, rd, intersectionPoint, body);
+        Body body = Body(getBodyID(index), 0, getBodyPosition(index), getBodyDimensions(index), Material(getBodyColor(index), getBodyDiffuse(index), getBodyRefraction(index)));
+
+        vec3 n = getNormal(ray.ro, ray.rd, intersectionPoint, body);
 
         vec3 rand = randomOnSphere();
-        vec3 spec = reflect(rd, n);
+        vec3 spec = reflect(ray.rd, n);
         vec3 diff = normalize(rand * dot(rand, n));
+        //vec3 diff = n;
 
         if(refraction > 0)
         {
-            float fresnel = 1.0 - abs(dot(-rd, n));
+            float fresnel = 1.0 - abs(dot(-ray.rd, n));
             float angle = asin(1.000273 / refraction);
 
             if(fresnel >= angle)
             {
-                rd = spec;
+                ray.rd = spec;
             }
             else
             {
-                ro += rd * (intersection.y + 0.001);
-                rd = mix(diff, spec, diffuse);
-                rd = refract(rd, n, 1.0 / (1.0 + refraction));
+                float rayRefraction = refraction;
+
+                if(!isMonochromatic(color))
+                {
+                    float redRefraction = refraction * 1.00611333;
+                    float greenRefraction = refraction * 1.01022667;
+                    float blueRefraction = refraction * 1.01126667;
+
+                    int index = int(random() * 3);
+                    float[3] refractions = float[3](redRefraction, greenRefraction, blueRefraction);
+                    rayRefraction = refractions[index];
+
+                    vec3[3] colors = vec3[3](vec3(color.r, 0, 0), vec3(0, color.g, 0), vec3(0, 0, color.b));
+                    //color = colors[index];
+                }
+
+                ray.ro += ray.rd * (intersection.y + 0.001);
+                ray.rd = mix(diff, spec, diffuse);
+                ray.rd = refract(ray.rd, n, 1.0 / (1.0 + rayRefraction));
             }
             //color * getLight(ro, rd, lightPosition, second);
         }
         else
         {
-            ro += rd * (intersection.x - 0.001);
+            ray.ro += ray.rd * (intersection.x - 0.001);
             //rd = reflect(rd, n);
 
-            rd = mix(diff, spec, diffuse);
+            ray.rd = mix(diff, spec, diffuse);
         }
 
-        color *= getLight(ro, rd, lightPosition, second);
+        color *= getLight(ray.ro, ray.rd, lightPosition, second);
     }
 
     return vec3(0);
@@ -152,24 +136,85 @@ vec3 render(in vec2 uv)
 
     //vec3 lookAt = vec3(0);
     //vec3 rd = getCam(ro, lookAt) * normalize(vec3(uv, uFOV));
+    //vec3 rd = normalize(vec3(uFOV, uv));
     vec3 rd = normalize(vec3(uFOV, uv));
+
     rd = mouseControl(rd).yzx;
+
+    float lensResolution = 10.0;
+    float focalLenght = 20.0;
+    float lensAperture = 0.6;
+    float shiftIteration = 0.0;
+    float inc = 1.0 / lensResolution;
+    float start = inc / 2.0 - 0.5;
+
+    vec3 focalPoint = ro + rd * focalLenght;
 
     initBodies();
 
-    //lightPosition.x = sin(uTime) * 10;
-    //lightPosition.y = cos(uTime) * 10;
-
     vec3 outColor;
-    vec3 rayCast = castRay(ro, rd);
+
+   /* for (float stepX = start; stepX < 0.5; stepX += inc)
+    {
+        for (float stepY = start; stepY < 0.5; stepY += inc)
+        {
+            vec2 shiftedOrigin = vec2(stepX, stepY) * lensAperture;
+
+            if(length(shiftedOrigin) < (lensAperture / 2.0))
+            {
+                vec3 shiftedRayOrigin = ro;
+                shiftedRayOrigin.x += shiftedOrigin.x;
+                shiftedRayOrigin.y += shiftedOrigin.y;
+                vec3 shiftedRayDirection = normalize(focalPoint - shiftedRayOrigin);
+
+                Ray ray = Ray(shiftedRayOrigin, shiftedRayDirection);
+                vec3 rayCast = castRay(ray);
+                vec2 intersection = rayCast.xy;
+                vec3 intersectionPoint = ray.ro + ray.rd * intersection.x;
+                int index = int(rayCast.z);
+                Body body = bodies[index];
+
+                if(index == -1)
+                {
+                    return getSky(ray.rd);
+                }
+
+                //outColor = getLight(ro, rd, lightPosition, rayCast);
+
+                vec2 uvRes = hash22(uv + 1.0) * uResolution + uResolution;
+                R_STATE.x = uint(uSeed1.x + uvRes.x);
+                R_STATE.y = uint(uSeed1.y + uvRes.x);
+                R_STATE.z = uint(uSeed2.x + uvRes.y);
+                R_STATE.w = uint(uSeed2.y + uvRes.y);
+
+                vec3 inColor = getBodyColor(index);
+
+                if(body.id == 2)
+                {
+                    float chessboard = floor(intersectionPoint.x) + floor(intersectionPoint.y) + floor(intersectionPoint.z);
+                    chessboard = fract(chessboard * 0.5);
+                    chessboard *= 2;
+                    //inColor = vec3(chessboard);
+                }
+
+                outColor += traceRay(ray, inColor);
+                shiftIteration++;
+            }
+        }
+    }
+
+    outColor = sqrt(clamp(outColor / shiftIteration, 0, 1));**/
+
+    Ray ray = Ray(ro, rd);
+    vec3 rayCast = castRay(ray);
     vec2 intersection = rayCast.xy;
-    vec3 intersectionPoint = ro + rd * intersection.x;
+    vec3 intersectionPoint = ray.ro + ray.rd * intersection.x;
     int index = int(rayCast.z);
     Body body = bodies[index];
 
     if(index == -1)
     {
-        return getSky(rd);
+        return getSky(ray.rd);
     }
 
     //outColor = getLight(ro, rd, lightPosition, rayCast);
@@ -180,24 +225,37 @@ vec3 render(in vec2 uv)
     R_STATE.z = uint(uSeed2.x + uvRes.y);
     R_STATE.w = uint(uSeed2.y + uvRes.y);
 
-    outColor = traceRay(ro, rd, getBodyColor(index));
+    vec3 inColor = getBodyColor(index);
 
-
-   /* vec3 mousePoint = castRay(vec3(0) + ro, rd);
-    int mousePointIndex = int(mousePoint.z);
-
-    if(mousePointIndex != -1)
+    if(body.id == 2)
     {
-        outColor = mix(outColor, vec3(1, 0.46, 0.09), 0.5);
-    }**/
+        float chessboard = floor(intersectionPoint.x) + floor(intersectionPoint.y) + floor(intersectionPoint.z);
+        chessboard = fract(chessboard * 0.5);
+        chessboard *= 2;
+        //inColor = vec3(chessboard);
+    }
 
-    vec3 sampleCol = texture(uPreviousFrame, rd.xy).rgb;
-    outColor = mix(sampleCol, outColor, 1);
+    outColor += traceRay(ray, inColor);
 
     if(int(uSelectedBodyIndex) == index)
     {
         outColor = mix(outColor, vec3(1, 0.46, 0.09), 0.5);
+        //return vec3(1, 0.46, 0.09);
     }
+
+    outColor = gammaCorrection(outColor);
+
+    /*if(uMouseClick.x == uv.x)
+    {
+        if(index != -1)
+        {
+            //outColor = mix(outColor, vec3(1, 0.46, 0.09), 0.5);
+        }
+    }**/
+
+    vec2 sampleUV = gl_FragCoord.xy / uResolution.xy;
+    vec3 sampleCol = texture(uSample, sampleUV).rgb;
+    outColor = mix(sampleCol, outColor, uSamplePart);
 
     return outColor;
 }
@@ -238,7 +296,5 @@ vec3 renderAAx4()
 void main()
 {
     vec3 col = renderAAx1();
-    col = gammaCorrection(col);
-
     fragColor = vec4(col, 1.0);
 }

@@ -15,6 +15,7 @@ public abstract class Body
     protected Material material;
     protected String name;
     protected boolean isVisible;
+    protected boolean isEnabled;
     protected boolean collides;
 
     public Body(Vector3 position, Shape shape, Material material)
@@ -24,6 +25,7 @@ public abstract class Body
         this.material = material;
         this.name = "Body " + (BODY_COUNT + 1);
         this.isVisible = true;
+        this.isEnabled = true;
         BODY_COUNT++;
     }
 
@@ -77,9 +79,19 @@ public abstract class Body
         isVisible = visible;
     }
 
+    public boolean isEnabled()
+    {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        isEnabled = enabled;
+    }
+
     public boolean isActive()
     {
-        return isVisible && position.length() <= PhysicConstants.MAX_DISTANCE;
+        return isVisible() && isEnabled() && position.length() <= PhysicConstants.MAX_DISTANCE;
     }
 
     public boolean collides()

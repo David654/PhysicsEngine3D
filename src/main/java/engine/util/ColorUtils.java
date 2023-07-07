@@ -10,4 +10,9 @@ public final class ColorUtils
     {
         return new Vector3(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0);
     }
+
+    public static Color toColor(Vector3 color)
+    {
+        return new Color((int) (color.getX() * 255), (int) (color.getY() * 255), (int) (color.getZ() * 255));
+    }
 }

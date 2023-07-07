@@ -1,17 +1,14 @@
 package launcher;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import gui.Window;
+import engine.Application;
 
 public class DesktopLauncher
 {
-    private Window window;
 
     public void launch()
     {
-        FlatDarculaLaf.setup();
-        window = new Window(2560, 1440, "Physics Engine");
+        Application application = new Application();
+        application.launch();
     }
 
     public static void main(String[] args)

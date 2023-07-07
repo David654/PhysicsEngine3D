@@ -1,5 +1,6 @@
 package engine.input;
 
+import engine.graphics.Canvas;
 import engine.graphics.camera.Camera;
 import engine.math.MathUtils;
 import engine.math.vector.Vector3;
@@ -20,23 +21,41 @@ public class KeyboardInput implements KeyListener
         this.camera = camera;
     }
 
+    public boolean isStill()
+    {
+        for(int i = 0; i < wasdUD.length; i++)
+        {
+            if(wasdUD[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public void update()
     {
         Vector3 dir = new Vector3();
         Vector3 dirTemp;
 
-        if(wasdUD[0]) dir = new Vector3(0, 0, 1);
-        else if (wasdUD[2]) dir = new Vector3(0, 0, -1);
+        if(wasdUD[0]) dir = dir.add(new Vector3(0, 0, 1));
+        if(wasdUD[2]) dir = dir.add(new Vector3(0, 0, -1));
         if(wasdUD[1]) dir = dir.add(new Vector3(-1, 0, 0));
-        else if(wasdUD[3]) dir = dir.add(new Vector3(1, 0, 0));
+        if(wasdUD[3]) dir = dir.add(new Vector3(1, 0, 0));
 
-        dirTemp = MathUtils.rotateY(dir, mouseInput.getMouseDragPosition().getX());
-        dir = MathUtils.rotateZ(dirTemp, mouseInput.getMouseDragPosition().getY());
+        if(wasdUD[0] || wasdUD[1] || wasdUD[2] || wasdUD[3] || wasdUD[4] || wasdUD[5])
+        {
+            Canvas.framesStill = 1;
+        }
+
+        dir = MathUtils.rotateY(dir, mouseInput.getMouseDragPosition().getX());
+        //dir = MathUtils.rotateZ(dir, mouseInput.getMouseDragPosition().getY());
 
         camera.setCameraPosition(camera.getCameraPosition().add(dir.multiply(camera.getCameraSpeed())));
 
-        if (wasdUD[4]) camera.setCameraPosition(camera.getCameraPosition().subtract(new Vector3(0, 0, camera.getCameraSpeed())));
-        else if (wasdUD[5]) camera.setCameraPosition(camera.getCameraPosition().add(new Vector3(0, 0, camera.getCameraSpeed())));
+        if (wasdUD[4]) camera.setCameraPosition(camera.getCameraPosition().add(new Vector3(0, camera.getCameraSpeed(), 0)));
+        else if (wasdUD[5]) camera.setCameraPosition(camera.getCameraPosition().subtract(new Vector3(0, camera.getCameraSpeed(), 0)));
     }
 
     public void keyTyped(KeyEvent e)
@@ -50,12 +69,12 @@ public class KeyboardInput implements KeyListener
 
         switch(key)
         {
-            case KeyEvent.VK_W -> wasdUD[0] = true;
-            case KeyEvent.VK_A -> wasdUD[1] = true;
-            case KeyEvent.VK_S -> wasdUD[2] = true;
-            case KeyEvent.VK_D -> wasdUD[3] = true;
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> wasdUD[0] = true;
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT -> wasdUD[1] = true;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> wasdUD[2] = true;
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> wasdUD[3] = true;
             case KeyEvent.VK_SPACE -> wasdUD[4] = true;
-            case KeyEvent.VK_SHIFT -> wasdUD[5] = true;
+            case KeyEvent.VK_CONTROL -> wasdUD[5] = true;
         }
     }
 
@@ -65,12 +84,12 @@ public class KeyboardInput implements KeyListener
 
         switch(key)
         {
-            case KeyEvent.VK_W -> wasdUD[0] = false;
-            case KeyEvent.VK_A -> wasdUD[1] = false;
-            case KeyEvent.VK_S -> wasdUD[2] = false;
-            case KeyEvent.VK_D -> wasdUD[3] = false;
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> wasdUD[0] = false;
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT -> wasdUD[1] = false;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> wasdUD[2] = false;
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> wasdUD[3] = false;
             case KeyEvent.VK_SPACE -> wasdUD[4] = false;
-            case KeyEvent.VK_SHIFT -> wasdUD[5] = false;
+            case KeyEvent.VK_CONTROL -> wasdUD[5] = false;
         }
     }
 }

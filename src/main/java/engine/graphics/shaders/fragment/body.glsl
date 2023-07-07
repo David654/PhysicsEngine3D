@@ -11,6 +11,7 @@ struct Material
 struct Body
 {
     int id;
+    int lightID;
     vec3 position;
     vec3 dimensions;
     Material material;

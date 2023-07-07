@@ -2,14 +2,18 @@ package engine.graphics.shaders;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL2;
+import engine.math.matrix.Matrix4;
 import engine.math.vector.*;
 
 import java.nio.Buffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 public final class ShaderUtils
 {
     public static int TEXTURE_NUM = 0;
+    public static int BUFFER_NUM = 0;
 
     public static void setUniform1f(GL2 gl, int shaderProgram, String name, float value)
     {
@@ -51,6 +55,12 @@ public final class ShaderUtils
         gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, name), (float) vector.getX(), (float) vector.getY(), (float) vector.getZ(), (float) vector.getW());
     }
 
+    public static void setUniformMatrix4(GL2 gl, int shaderProgram, String name, Matrix4 matrix)
+    {
+        float[] array = matrix.toFloatArray();
+        gl.glUniformMatrix4fv(gl.glGetUniformLocation(shaderProgram, name), 1, false, array, 0);
+    }
+
     public static void setUniformTexture(GL2 gl, int shaderProgram, String name, int texture)
     {
         gl.glActiveTexture(GL2.GL_TEXTURE0 + TEXTURE_NUM);
@@ -59,14 +69,32 @@ public final class ShaderUtils
         TEXTURE_NUM++;
     }
 
-    public static void setUniformBuffer(GL2 gl, int shaderProgram, String name, Buffer buffer, int bufferIndex)
+    public static void bindUniformBuffer(GL2 gl, int shaderProgram, String name, Buffer buffer, int bufferIndex)
     {
         gl.glBindBuffer(GL2.GL_UNIFORM_BUFFER, bufferIndex);
+        gl.glBufferData(GL2.GL_UNIFORM_BUFFER, (long) buffer.limit() * Float.SIZE, buffer, GL2.GL_DYNAMIC_DRAW);
+        int blockIndex = gl.glGetUniformBlockIndex(shaderProgram, name);
+        gl.glBindBufferBase(GL2.GL_UNIFORM_BUFFER, blockIndex, bufferIndex);
+        gl.glBindBuffer(GL2.GL_UNIFORM_BUFFER, 0);
+    }
+
+    public static void setUniformBuffer(GL2 gl, int shaderProgram, String name, Buffer buffer, int bufferIndex)
+    {
+        /*gl.glBindBuffer(GL2.GL_UNIFORM_BUFFER, bufferIndex);
         int blockIndex = gl.glGetUniformBlockIndex(shaderProgram, name);
         gl.glUniformBlockBinding(shaderProgram, blockIndex, 0);
         gl.glBufferData(GL2.GL_UNIFORM_BUFFER, (long) buffer.limit() * Float.SIZE, buffer, GL2.GL_DYNAMIC_DRAW);
         gl.glBindBufferBase(GL2.GL_UNIFORM_BUFFER, blockIndex, bufferIndex);
         gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+        BUFFER_NUM++;**/
+
+        gl.glBindBuffer(GL2.GL_UNIFORM_BUFFER, bufferIndex);
+        gl.glBufferSubData(GL2.GL_UNIFORM_BUFFER, 0, (long) buffer.limit() * Float.SIZE, buffer);
+        gl.glBindBuffer(GL2.GL_UNIFORM_BUFFER, 0);
+        //int blockIndex = gl.glGetUniformBlockIndex(shaderProgram, name);
+        //gl.glBindBufferBase(GL2.GL_UNIFORM_BUFFER, blockIndex, bufferIndex);
+        //gl.glUniformBlockBinding(shaderProgram, blockIndex, 0);
+        BUFFER_NUM++;
     }
 
     public static int getBufferIndex(GL2 gl)

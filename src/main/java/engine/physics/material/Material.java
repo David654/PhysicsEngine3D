@@ -9,6 +9,7 @@ public class Material
     protected double refraction;
     protected double friction;
     protected double restitution;
+    protected boolean isLightSource;
 
     public Material(Color color, double diffuse, double refraction, double friction, double restitution)
     {
@@ -67,5 +68,15 @@ public class Material
     public void setRestitution(double restitution)
     {
         this.restitution = restitution;
+    }
+
+    public boolean isLightSource()
+    {
+        return isLightSource;
+    }
+
+    public void setLightSource(boolean lightSource)
+    {
+        isLightSource = lightSource;
     }
 }

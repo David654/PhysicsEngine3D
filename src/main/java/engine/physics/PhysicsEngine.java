@@ -42,13 +42,13 @@ public class PhysicsEngine implements Runnable
 
         double ballRadius = 0.057;
         double ballMass = 0.17;
-        int rows = 4;
+        int rows = 5;
         double distFactor = 2.2;
         double y = -1;
         double z = 0.8;
 
-        Vector3 position = new Vector3(0.1, y + 1, z + 0.1);
-        BODY_HANDLER.add(new DynamicBody(position, new Vector3(0, -1, 0), ballMass, new SphereCollider(position, ballRadius), new Sphere(position, ballRadius), new Material( new Color(0, 255, 255), 1, 0, 0.06, 0.9)));
+        Vector3 position = new Vector3(0.1, y + 10, z + 0.1);
+       // BODY_HANDLER.add(new DynamicBody(position, new Vector3(0, -10, 0), ballMass, new SphereCollider(position, ballRadius), new Sphere(position, ballRadius), new Material( new Color(255, 255, 255), 0.4, 0, 0.06, 0.9)));
         //BODY_HANDLER.add(new DynamicBody(new Vector3(0, -0.8, -1.5), new Vector3(0, 0, 1), 1, new AABBCollider(new Vector3(0, -0.8, -5), new Vector3(ballRadius * 4)), new Box(new Vector3(0, -0.8, -5), new Vector3(ballRadius * 4)), new Material( new Color(244, 113, 116), 1, 0.5, 0.06, 0.5)));
 
         /*for(int i = 0; i < rows; i++)
@@ -81,22 +81,45 @@ public class PhysicsEngine implements Runnable
                     position = new Vector3(i * ballRadius * 2.2, y + j * ballRadius * 2.2, z + k * ballRadius * 2.2);
                     double mass = Math.pow(ballRadius, 3) * Math.PI * 4 / 3 * PhysicConstants.AIR_DENSITY;
                     double radius = ballRadius;
-                    System.out.println(mass);
 
                     DynamicBody body = new DynamicBody(position,
                             new Vector3(0, 0, 0), mass,
                             new SphereCollider(position, radius),
                             new Sphere(position, radius),
-                            new Material(new Color((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)), 1, 1.5, 0, 1));
+                            new Material(new Color((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255)), 1, 0, 0, 1));
                     body.applyGravity(false);
-                    //BODY_HANDLER.add(body);
+                    BODY_HANDLER.add(body);
                 }
             }
         }
 
+        for(int i = 0; i < rows; i++)
+        {
+            for(int j = 0; j < rows; j++)
+            {
+                position = new Vector3(i * ballRadius * 2.2, y, z + j * ballRadius * 2.2);
+
+                DynamicBody body = new DynamicBody(position,
+                        new Vector3(0, 0, 0), ballMass,
+                        new SphereCollider(position, ballRadius),
+                        new Sphere(position, ballRadius),
+                        new Material(new Color(255, 150, 150), (i + 1 + j * rows) * (1.0 / rows / rows), 0, 0, 0.5));
+                //BODY_HANDLER.add(body);
+            }
+        }
+
+        position = position.subtract(new Vector3(0, 0, 2));
+        //BODY_HANDLER.add(new DynamicBody(position, new Vector3(0, 0, 0), ballMass, new SphereCollider(position, ballRadius), new Sphere(position, ballRadius), new Material( new Color(255, 255, 255), 1, 1.5, 0.06, 0.5)));
+
+        position = position.add(new Vector3(0.5, 0.001, 0));
+        DynamicBody light1 = new DynamicBody(position, new Vector3(0, 0, 0), ballMass, new SphereCollider(position, ballRadius), new Sphere(position, ballRadius), new Material( new Color(255, 255, 255), 1, 1.5, 0.06, 0.9));
+        light1.applyGravity(false);
+        light1.getMaterial().setLightSource(true);
+        //BODY_HANDLER.add(light1);
+
 //(int) MathUtils.getRandomValue(0, 255), (int) MathUtils.getRandomValue(0, 255), (int) MathUtils.getRandomValue(0, 255)
 
-       BODY_HANDLER.add(new StaticBody(new Vector3(0, -2, 0), new AABBCollider(new Vector3(0, -2, 0), new Vector3(1.27, 0.2, 2.54)), new Box(new Vector3(0, -2, 0), new Vector3(1.27, 0.2, 2.54)), new Material(new Color(128, 128, 128), 1, 0, 0.02, 0.384)));
+       //BODY_HANDLER.add(new StaticBody(new Vector3(0, -2, 0), new AABBCollider(new Vector3(0, -2, 0), new Vector3(1.27, 0.2, 2.54)), new Box(new Vector3(0, -2, 0), new Vector3(1.27, 0.2, 2.54)), new Material(new Color(128, 128, 128), 0.9, 0, 0.02, 0.384)));
       // BODY_HANDLER.add(new StaticBody(new Vector3(-1.27, -1.2 - ballRadius, 0), new AABBCollider(new Vector3(-1.27, -1.2 - ballRadius, 0), new Vector3(0.2, 1.27 / 2 - 0.2, 2.54)), new Box(new Vector3(-1.27, -1.2 - ballRadius, 0), new Vector3(0.2, 1.27 / 2 - 0.2, 2.54)), new Material(new Color(0, 128, 0), 1, 0, 0.02, 0.384)));
        //BODY_HANDLER.add(new StaticBody(new Vector3(1.27, -1.2 - ballRadius, 0), new AABBCollider(new Vector3(1.27, -1.2 - ballRadius, 0), new Vector3(0.2, 1.27 / 2 - 0.2, 2.54)), new Box(new Vector3(1.27, -1.2 - ballRadius, 0), new Vector3(0.2, 1.27 / 2 - 0.2, 2.54)), new Material(new Color(0, 128, 0), 1, 0, 0.02, 0.384)));
        //BODY_HANDLER.add(new StaticBody(new Vector3(0, y - ballRadius * 1.205, 0), new AABBCollider(new Vector3(0, y - ballRadius * 1.205, 0), new Vector3(boxSize, 0.2, boxSize * 4)), new Box(new Vector3(0, y - ballRadius * 1.205, 0), new Vector3(boxSize, 0.2, boxSize * 4)), new Material(new Color(64, 64, 64), 1, 0, 0.2, 0.384)));

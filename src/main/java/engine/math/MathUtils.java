@@ -1,7 +1,9 @@
 package engine.math;
 
 import engine.math.matrix.Matrix3;
+import engine.math.matrix.Matrix4;
 import engine.math.vector.Vector3;
+import engine.math.vector.Vector4;
 
 import java.util.function.UnaryOperator;
 
@@ -341,6 +343,70 @@ public final class MathUtils
                 {sin, cos, 0},
                 {0, 0, 1}
         }).multiply(vector);
+    }
+
+    public static Matrix4 getRotationMatrixX(double theta)
+    {
+        double sin = Math.sin(theta);
+        double cos = Math.cos(theta);
+
+        return new Matrix4(new double[][]{
+                {1, 0, 0, 0},
+                {0, cos, -sin, 0},
+                {0, sin, cos, 0},
+                {0, 0, 0, 1}
+        });
+    }
+
+    public static Matrix4 getRotationMatrixY(double theta)
+    {
+        double sin = Math.sin(theta);
+        double cos = Math.cos(theta);
+
+        return new Matrix4(new double[][]{
+                {cos, 0, sin, 0},
+                {0, 1, 0, 0},
+                {-sin, 0, cos, 0},
+                {0, 0, 0, 1},
+        });
+    }
+
+    public static Matrix4 getRotationMatrixZ(double theta)
+    {
+        double sin = Math.sin(theta);
+        double cos = Math.cos(theta);
+
+        return new Matrix4(new double[][]{
+                {cos, -sin, 0, 0},
+                {sin, cos, 0, 0},
+                {0, 0, 1, 0},
+                {0, 0, 0, 1},
+        });
+    }
+
+    public static Matrix4 getTranslationMatrix(Vector3 point)
+    {
+        return new Matrix4(new double[][]{
+                {1, 0, 0, point.getX()},
+                {0, 1, 0, point.getY()},
+                {0, 0, 1, point.getZ()},
+                {0, 0, 0, 1},
+        });
+    }
+
+    public static Matrix4 getScalingMatrix(Vector3 scale)
+    {
+        return new Matrix4(new double[][]{
+                {scale.getX(), 0, 0, 0},
+                {0, scale.getY(), 0, 0},
+                {0, 0, scale.getZ(), 0},
+                {0, 0, 0, 1},
+        });
+    }
+
+    public static Matrix4 getScalingMatrix(double scale)
+    {
+        return getScalingMatrix(new Vector3(scale));
     }
 
     public static double getRandomValue(double min, double max)

@@ -1,5 +1,6 @@
 package gui;
 
+import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -48,7 +49,7 @@ public class Window extends JFrame implements GUIComponent
         this.setVisible(true);
     }
 
-    public void createAndShowGUI()
+    public synchronized void createAndShowGUI()
     {
         init();
         initGraphics();
@@ -67,6 +68,7 @@ public class Window extends JFrame implements GUIComponent
         GLProfile glProfile = GLProfile.get(GLProfile.GL2);
         GLCapabilities glCapabilities = new GLCapabilities(glProfile);
         glCanvas = new GLCanvas(glCapabilities);
+
         FPSAnimator animator = new FPSAnimator(glCanvas, 1000, true);
 
         glCanvas.addGLEventListener(scene);

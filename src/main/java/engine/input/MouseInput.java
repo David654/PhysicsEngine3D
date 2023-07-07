@@ -10,6 +10,7 @@ public class MouseInput implements MouseListener, MouseMotionListener, MouseWhee
     private Vector2 mouseClick;
     private Vector2 mouseDragPosition;
     private double mouseZoom;
+    private boolean mouseDragged;
 
     public MouseInput()
     {
@@ -33,6 +34,16 @@ public class MouseInput implements MouseListener, MouseMotionListener, MouseWhee
         return mouseZoom;
     }
 
+    public boolean isMouseDragged()
+    {
+        return mouseDragged;
+    }
+
+    public void setMouseDragged(boolean mouseDragged)
+    {
+        this.mouseDragged = mouseDragged;
+    }
+
     public void mouseClicked(MouseEvent e) {}
 
     public void mousePressed(MouseEvent e)
@@ -49,6 +60,7 @@ public class MouseInput implements MouseListener, MouseMotionListener, MouseWhee
 
     public void mouseDragged(MouseEvent e)
     {
+        mouseDragged = true;
         Vector2 d = new Vector2(e.getX(), e.getY()).subtract(mousePosition);
         d = new Vector2(d.getX() / 1280, d.getY() / 720);
         //d = d.multiply(0.001);

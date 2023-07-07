@@ -29,10 +29,16 @@ public final class Icons
     public static final String SWITCH_ICON_PATH = ICON_DIRECTORY + "switch.png";
     public static final String ARROW_DOWN_ICON_PATH = ICON_DIRECTORY + "arrow_down.png";
     public static final String ARROW_RIGHT_ICON_PATH = ICON_DIRECTORY + "arrow_right.png";
+    public static final String PC_ICON_PATH = ICON_DIRECTORY + "pc.png";
+
+    public static ImageIcon createIcon(String fileName, int size)
+    {
+        return Icons.resize(new ImageIcon(fileName), size);
+    }
 
     public static ImageIcon createIcon(String fileName)
     {
-        return Icons.resize(new ImageIcon(fileName), ICON_SIZE);
+        return createIcon(fileName, ICON_SIZE);
     }
 
     public static ImageIcon createEmptyIcon()

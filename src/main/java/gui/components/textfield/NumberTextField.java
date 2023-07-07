@@ -35,7 +35,7 @@ public class NumberTextField extends AbstractTextField
         {
             try
             {
-                Integer.parseInt(text);
+                Double.parseDouble(text);
                 return true;
             }
             catch(NumberFormatException e)

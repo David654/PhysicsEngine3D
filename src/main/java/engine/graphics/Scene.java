@@ -3,6 +3,7 @@ package engine.graphics;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
+import engine.Application;
 import engine.graphics.camera.Camera;
 import engine.input.KeyboardInput;
 import engine.input.MouseInput;
@@ -10,6 +11,9 @@ import engine.physics.PhysicsEngine;
 import engine.util.FPSCounter;
 import gui.BodySelectionPanel;
 import gui.Window;
+import gui.components.dialog.SystemInfo;
+
+import java.text.DecimalFormat;
 
 public class Scene implements GLEventListener
 {
@@ -18,6 +22,7 @@ public class Scene implements GLEventListener
     private final Window window;
 
     private final FPSCounter fpsCounter;
+    private double frameTime;
 
     private Canvas canvas;
     private final BodySelectionPanel bodySelectionPanel;
@@ -72,6 +77,7 @@ public class Scene implements GLEventListener
     {
         canvas = new Canvas(width, height, this);
         canvas.init(gl);
+        Application.SYSTEM_INFO.init(gl);
         physicsEngine.start();
     }
 
@@ -79,11 +85,8 @@ public class Scene implements GLEventListener
     {
         GL2 gl = glAutoDrawable.getGL().getGL2();
 
-        gl.glViewport(0, 0, width, height);
         gl.glMatrixMode(GL2.GL_PROJECTION);
-        float aspect = (float) width / (float) height;
-        gl.glOrtho(-aspect, aspect, -1, 1, -1, 1);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glViewport(0, 0, height, height);
         gl.glLoadIdentity();
 
         gl.glShadeModel(GL2.GL_SMOOTH);
@@ -95,32 +98,42 @@ public class Scene implements GLEventListener
     private void update()
     {
         fpsCounter.update();
-        window.setTitle("Physics Engine 3D | FPS: " + FPSCounter.getFPS());
+        DecimalFormat df = new DecimalFormat("#.#");
+        window.setTitle("Physics Engine 3D | FPS: " + FPSCounter.getFPS() + " | Frame Time: " + df.format(frameTime) + " ms");
         keyboardInput.update();
     }
 
     public void display(GLAutoDrawable glAutoDrawable)
     {
+        long start = System.nanoTime();
 
         update();
 
         GL2 gl = glAutoDrawable.getGL().getGL2();
 
-        gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
-        gl.glClearColor(0, 0, 0, 1);
-        gl.glLoadIdentity();
+
 
         canvas.draw(gl);
+
+        frameTime = (System.nanoTime() - start) * 10e-6;
     }
 
     public void dispose(GLAutoDrawable glAutoDrawable)
     {
+        GL2 gl = glAutoDrawable.getGL().getGL2();
 
+        canvas.dispose(gl);
     }
 
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height)
     {
+        GL2 gl = glAutoDrawable.getGL().getGL2();
+
         this.width = width;
         this.height = height;
+
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glViewport(0, 0, height, height);
+        gl.glLoadIdentity();
     }
 }

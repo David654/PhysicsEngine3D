@@ -1,5 +1,8 @@
 package gui;
 
+import engine.Application;
+import gui.components.dialog.SystemInfo;
+
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -29,10 +32,11 @@ public class MenuBar extends JMenuBar implements GUIComponent
     private JMenuItem deleteMenuItem;
 
     // Window menu
-
+    private JMenuItem showFPSMenuItem;
+    private JMenuItem showFrameTimeMenuItem;
 
     // Tools menu
-
+    private JMenuItem captureScreenMenuItem;
 
     // Help menu
     private JMenuItem helpMenuItem;
@@ -40,6 +44,7 @@ public class MenuBar extends JMenuBar implements GUIComponent
     private JMenuItem reportBugMenuItem;
     private JMenuItem submitFeedbackMenuItem;
     private JMenuItem checkForUpdatesMenuItem;
+    private JMenuItem systemPropertiesMenuItem;
     private JMenuItem aboutMenuItem;
 
     public MenuBar()
@@ -93,8 +98,14 @@ public class MenuBar extends JMenuBar implements GUIComponent
         // Window menu
         windowMenu = new JMenu("Window");
 
+        showFPSMenuItem = windowMenu.add("Show FPS");
+        showFrameTimeMenuItem = windowMenu.add("Show Frame Time");
+
         // Tools menu
         toolsMenu = new JMenu("Tools");
+
+        captureScreenMenuItem = toolsMenu.add("Capture Screen");
+        captureScreenMenuItem.setAccelerator(KeyStroke.getKeyStroke('C', InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 
         // Help menu
         helpMenu = new JMenu("Help");
@@ -108,6 +119,10 @@ public class MenuBar extends JMenuBar implements GUIComponent
         helpMenu.addSeparator();
 
         checkForUpdatesMenuItem = helpMenu.add("Check for Updates");
+        systemPropertiesMenuItem = helpMenu.add("System Info");
+
+        systemPropertiesMenuItem.addActionListener(e -> Application.SYSTEM_INFO.open());
+
         aboutMenuItem = helpMenu.add("About");
 
         this.add(fileMenu);
